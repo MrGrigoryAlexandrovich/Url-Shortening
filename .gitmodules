@@ -1,3 +1,6 @@
 [submodule "Url-Managment-app"]
 	path = Url-Managment-app
 	url = https://github.com/MrGrigoryAlexandrovich/Url-Managment-app.git
+[submodule "URL-REDIRECTION-app"]
+	path = URL-REDIRECTION-app
+	url = https://github.com/MrGrigoryAlexandrovich/URL-REDIRECTION-app.git
