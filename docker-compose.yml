@@ -1,0 +1,86 @@
+version: '3.3'
+
+services:    
+    rabbitmq:
+        image: rabbitmq
+        hostname: "localhost"
+        ports:
+        - "5672:5672"
+        restart: always
+        networks:
+            shortner_net:
+                ipv4_address: 172.28.0.6   
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin:5.0.1
+        restart: always
+        environment:
+            PMA_HOST: db
+        ports:
+        - "8080:80"
+        networks:
+            shortner_net:
+                ipv4_address: 172.28.0.7
+
+    management-service:
+        build: ./Url-Managment-app
+        environment:
+            - DATABASE_HOST=db
+        depends_on:
+            - db
+            - rabbitmq
+        restart: always
+        ports:
+            - 8000:8000
+        links:
+            - rabbitmq
+            - db
+        networks:
+            shortner_net:
+                ipv4_address: 172.28.0.4  
+ 
+    db:
+        build: ./Url-Managment-app/db
+        command: --default-authentication-plugin=mysql_native_password
+        restart: always
+        cap_add:
+            - SYS_NICE 
+        environment:
+            MYSQL_ROOT_PASSWORD: password
+            MYSQL_DATABASE: url-db
+        networks:
+            shortner_net:
+                ipv4_address: 172.28.0.5
+
+    redirection-service:
+        build: ./URL-REDIRECTION-app
+        depends_on: 
+            - redis
+            - rabbitmq
+            - management-service
+        links: 
+            - rabbitmq
+            - management-service
+            - redis
+        ports:
+            - 8001:8001
+        restart : always
+        networks:
+            shortner_net:
+                ipv4_address: 172.28.0.8
+        
+ 
+    redis:
+        image: redis
+        restart : always
+        ports: 
+        - 6379:6379
+        networks:
+            shortner_net:
+                ipv4_address: 172.28.0.9
+
+networks:
+    shortner_net:
+        ipam:
+            driver: default
+            config:
+            - subnet: 172.28.0.0/16
